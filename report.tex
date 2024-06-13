@@ -253,7 +253,7 @@ It will be updated regularly to reflect the progress and changes made during
 the project's development.
 
 
-\newpage
+
 
 \section{Methodology}
 
@@ -404,43 +404,33 @@ For the lowest level of detail, we will use simple models manually made with
 \end{figure}
 
 \subsubsection{LOD 1, 2, 3}
-For the other levels of detail we will retrieve a reference tree mesh from the
-\texttt{Sketch up 3D Warehouse}\cite{sketchup} and wrap them using the 
+For the other LODs we will retrieve reference trees meshes from the
+\texttt{Sketch up 3D Warehouse}\cite{sketchup}, remove the trunk and branches as
+much as possible and then wrap them using the 
 \texttt{CGAL Alpha Wrapper}\cite{cgal_alpha_wrapper} algorithm (explained in the 
 next section). \\
-The reference tree meshes will be generated using the \texttt{wrap.cpp} file. \\
-Using different \texttt{alpha} values we will generate different levels of detail. \\  
-
-\begin{table}[H]
+Here is an example of a Ginkgo tree mesh:
+\begin{figure}[H]
     \centering
-    \begin{tabular}{|l|c|c|c|c|}
-    \hline
-    Tree & LOD 0 & LOD 1 & LOD 2 & LOD 3 \\
-    \hline
-    Alpha & Nan & 20 & 50 & 100 \\
-    \hline
-    \end{tabular}
-    \caption{Alpha values for each LOD}
-    \label{tab:my_label}
-\end{table}
+        \centering
+        \includegraphics[width=0.8\textwidth]{images/ginkgo-sketchup.png}
+        \captionsetup{font={scriptsize}}
+        \caption{Mesh of a Ginkgo tree on Sketchup 3D Warehouse}
+\end{figure}
 
-Here's a table showing the number of faces per tree type and LOD:
+Using the CGAL 3D Alpha Wrapping algorithm, we will generate reference tree
+meshes for each level of detail (LOD) from 0 to 3. This pre-processing ensures
+that the meshes are readily available in memory, eliminating the need to wrap
+each tree model individually during program execution.
 
-\begin{table}[H]
-    \centering
-    \begin{tabular}{|l|c|c|c|c|}
-    \hline
-    Tree & LOD 0 & LOD 1 & LOD 2 & LOD 3 \\
-    \hline
-    Trunk & 194 & 194 & 194 & 194 \\
-    Cone & 874 & 894 & 6038 & 34260 \\
-    Oval & 530 & 1260 & 9254 & 44942 \\
-    Round & 1106 & 1198 & 10152 & 45164 \\
-    \hline
-    \end{tabular}
-    \caption{Number of faces per tree type and LOD}
-    \label{tab:my_label2}
-\end{table}
+A \textit{wrap.cpp} file will be provided to generate the reference meshes.
+It can be used as follows:
+
+\begin{lstlisting}[language=bash]
+./build/wrap tree_ref/raw_tree/Ginkgo.stl 50 600
+\end{lstlisting}
+
+Where 50 is the \texttt{alpha} value and 600 is the \texttt{offset} value.
 
 \begin{figure}[H]
     \centering
@@ -508,16 +498,48 @@ Here's a table showing the number of faces per tree type and LOD:
     \end{minipage}
 \end{figure}
 
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|}
+    \hline
+    Tree & LOD 0 & LOD 1 & LOD 2 & LOD 3 \\
+    \hline
+    Alpha & Nan & 20 & 50 & 100 \\
+    \hline
+    \end{tabular}
+    \caption{Alpha values for each LOD}
+    \label{tab:my_label}
+\end{table}
+
+\subsubsection{Number of faces}
+In simulation software, the number of faces of the tree models is crucial for
+performance. Here is the number of faces for each tree type and LOD:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|}
+    \hline
+    Tree & LOD 0 & LOD 1 & LOD 2 & LOD 3 \\
+    \hline
+    Trunk & 194 & 194 & 194 & 194 \\
+    Cone & 874 & 894 & 6038 & 34260 \\
+    Oval & 530 & 1260 & 9254 & 44942 \\
+    Round & 1106 & 1198 & 10152 & 45164 \\
+    \hline
+    \end{tabular}
+    \caption{Number of faces per tree type and LOD}
+    \label{tab:my_label2}
+\end{table}
+
+\subsubsection{Leaf density}
 
 
 
 
+\subsection{Building mesh}
 
-
-
-\subsection{Dataset}
-
-The primary dataset we are working with is a 3D model of the Strasbourg city
+To test the integration of trees and buildings we will be working with is a 3D 
+model of the Strasbourg city
 center, provided in the \texttt{.stl} file format. This file contains the
 geometric information of the terrain and buildings in the specified area,
 which serves as the base for our project.
@@ -562,7 +584,6 @@ This dataset is instrumental in allowing us to accurately position tree models
 within the urban landscape, ensuring that our simulations reflect realistic
 interactions between vegetation and urban structures.
 
-\newpage
 
 \subsection{Alpha Wrapping}
 \begin{figure}[H]
@@ -638,111 +659,8 @@ flagged inside. Steiner points inserted during refinement break necessary cells,
  reducing circumradii and ensuring completion.
 
 
-\subsection{Tree model generation}
-Using the CGAL 3D Alpha Wrapping algorithm, we will generate reference tree
-meshes for each level of detail (LOD) from 0 to 3. This pre-processing ensures
-that the meshes are readily available in memory, eliminating the need to wrap
-each tree model individually during program execution.
 
-A \textit{wrap.cpp} file will be provided to generate the reference meshes.
-It can be used as follows:
-
-\begin{lstlisting}[language=bash]
-./build/wrap tree_ref/raw_tree/Ginkgo.stl 50 600
-\end{lstlisting}
-
-Where 50 is the \texttt{alpha} value and 600 is the \texttt{offset} value.
-
-The reference meshes will be used to generate the tree models obtained from
-the \texttt{Overpass} query. Each tree model will be generated by scaling and
-translating the reference mesh to match the tree's height and position in 3D space.
- This will be accomplished using the \texttt{CGAL Affine Transformation}\cite{cgal_affine_transformation},
-which has linear complexity in the number of vertices of the mesh.
-
-\newpage
-
-The alpha parameter for the CGAL wrapper was set as follows for each LOD:
-
-\begin{itemize}
-    \item LOD 0: Not made with the wrapper
-    \item LOD 1: 20
-    \item LOD 2: 50
-    \item LOD 3: 100
-\end{itemize}
-
-Here's a table showing the number of faces per tree type and LOD:
-
-\begin{table}[h]
-    \centering
-    \begin{tabular}{|l|c|c|c|c|}
-    \hline
-    Tree & LOD 0 & LOD 1 & LOD 2 & LOD 3 \\
-    \hline
-    Abies & 334 & 920 & 5648 & 35592 \\
-    Acer & 326 & 1516 & 10622 & 33606 \\
-    Aesculus & 274 & 1068 & 6084 & 28782 \\
-    Catalpa & 404 & 946 & 4508 & 19940 \\
-    Cedrus & 248 & 974 & 6702 & 27564 \\
-    Ginkgo & 332 & 1128 & 7488 & 38258 \\
-    Gleditsia & 228 & 1032 & 7506 & 28866 \\
-    Liquidambar & 212 & 858 & 5210 & 25146 \\
-    Magnolia & 230 & 892 & 7820 & 41150 \\
-    Platanus & 286 & 1150 & 7148 & 30670 \\
-    Quercus & 274 & 1008 & 8748 & 40426 \\
-    Taxus & 370 & 798 & 3644 & 15826 \\
-    Tilia & 328 & 1102 & 8104 & 46112 \\
-    \hline
-    \end{tabular}
-    \caption{Number of faces per tree type and LOD}
-    \label{tab:my_label}
-\end{table}
-
-The \texttt{offset} parameter for the CGAL wrapper was set as 600 for each LOD.
-
-Here are the results for a Ginkgo tree model at each LOD:
-
-\begin{figure}[H]
-    \centering
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=1\textwidth]{images/tree-cone_lod0.png}
-        \captionsetup{font={scriptsize}}
-        \caption{Cone tree lod0}
-    \end{minipage}\hfill
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=1\textwidth]{images/tree-cone_lod1.png}
-        \captionsetup{font={scriptsize}}
-        \caption{Ginkgo lod1}
-    \end{minipage}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=1\textwidth]{images/tree-cone_lod2.png}
-        \captionsetup{font={scriptsize}}
-        \caption{Ginkgo lod2}
-    \end{minipage}\hfill
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=1\textwidth]{images/tree-cone_lod3.png}
-        \captionsetup{font={scriptsize}}
-        \caption{Ginkgo lod3}
-    \end{minipage}
-\end{figure}
-
-The scenario where insufficient data is available for a tree must also be
-addressed. Initially, we considered using a k-nearest neighbors
-algorithm\cite{k-nn} to determine the tree's metadata (species, height,
-leaf density, etc.) based on surrounding trees. However, this approach is
-impractical because data is often missing for large areas, such as parks.
-Instead, we will assign a random height selected from a normal distribution with
-a mean specified by \texttt{default\_height\_range} and a genus specified by
-\texttt{default\_genus} in the \textit{config.json} file.
-
-\subsection{Mercator projection}
+\subsection{Tree placement}
 
 Generated tree models will be integrated into terrain meshes to create comprehensive
 3D urban models. To ensure precise integration into the terrain mesh (especially for large area), the tree models coordinates
@@ -811,177 +729,6 @@ Time to mesh: 155.965 seconds, (2.59942 minutes)
 \newpage
 
 \section{Implementation}
-
-\subsection{Config class}
-
-This class is designed to store the program's configuration. It will be used to
-store the \texttt{bounding box}, the \texttt{level of details}, the
-\texttt{output name}, the \texttt{default genus}, the \texttt{default height},
-the \texttt{origin}, the \texttt{input building mesh}, the \texttt{altitude} and 
-the \texttt{merge} boolean.
-
-\begin{lstlisting}[language=C++]
-class Config {
-    private:
-        std::string M_bbox;
-        int M_LOD;
-        std::string M_output_name;
-        std::string M_default_genus;
-        std::string M_default_height;
-        std::string M_origin;
-        std::string M_input_building_mesh;
-        double M_altitude;
-        bool M_merge;
-
-    public:
-        Config(std::string const &filename);
-
-        // Ommiting getters and setters
-
-        std::vector<double> bbox_coords() const;
-    };
-
-\end{lstlisting}
-
-\subsection{Query function}
-
-The function \texttt{perform\_query} will be used to query the \texttt{Overpass API}
-and save the result in a \texttt{.json} file. It will take the bounding box as a
-parameter.
-The function \texttt{get\_query\_result} will be used to get the result of the query
-using the header only library \texttt{nlohmann::json}.
-
-\begin{lstlisting}[language=C++]
-void perform_query(std::string bbox);
-nlohmann::json get_query_result();
-\end{lstlisting}
-
-\subsection{Class tree}
-
-The \texttt{Tree} class will be used to store the tree's metadata and mesh. \\
-The function \texttt{computeXY} will be used to convert the latitude and longitude
-to Cartesian coordinates using the \texttt{WGS84toCartesian} library. \\
-The function \texttt{wrap} will be used to model the tree by scaling and moving
-the reference mesh to the correct position in the 3D space. \\
-The function \texttt{load\_genus} will be used to load tree genus categories from
-the \texttt{trees.json} file. \\
-The function \texttt{createTreeFromJson} will be used to create a tree object from
-the \texttt{.json} data acquired from the \texttt{Overpass API}. \\
-In order to be able to sort trees, the \texttt{operator<} function will be overloaded.
-
-
-\begin{lstlisting}[language=C++]
-using K = CGAL::Exact_predicates_inexact_constructions_kernel;
-using Point_3 = K::Point_3;
-using Mesh = CGAL::Surface_mesh<Point_3>;
-
-class Tree {
-    private:
-    long M_id;
-    double M_lat, M_lon, M_x, M_y;
-    double M_height, M_altitude;
-    double M_circumference, M_diameter_crown;
-    std::string M_genus, M_species, M_season;
-    std::vector<std::string> M_known_genus, M_cedrus_like, M_acer_like,
-        M_liquidambar_like, M_quercus_like;
-    Mesh M_wrap;
-    std::vector<Point_3> M_points;
-    std::vector<std::array<int, 3>> M_faces;
-
-    public:
-    // Ommiting getters and setters
-
-    void computeXY(double ref_lat, double ref_lon);
-    void wrap(int lod);
-    void load_genus(const std::string &filename);
-};
-
-Tree createTreeFromJson(const nlohmann::json &treeJson);
-std::ostream &operator<<(std::ostream &os, const Tree &tree);
-bool operator<(const Tree &lhs, const Tree &rhs);
-\end{lstlisting}
-
-Each tree model has a CGAL \href{https://doc.cgal.org/latest/Surface_mesh/classCGAL_1_1Surface__mesh.html}{Mesh}
-wrapper object that will contain the tree's
-mesh and its position in the 3D space.
-
-Scaling and moving the trees into the correct position ended being more complex
-than expected.
-
-\begin{lstlisting}[language=C++]
-// Calculate centroid of the tree
-double centroid_x = 0, centroid_y = 0, centroid_z = 0;
-for (const Point_3 &p : points) {
-    centroid_x += p.x();
-    centroid_y += p.y();
-    centroid_z += p.z();
-}
-centroid_x /= points.size();
-centroid_y /= points.size();
-centroid_z /= points.size();
-Point_3 centroid(centroid_x, centroid_y, centroid_z);
-
-// Calculate bounding box from points
-for (const Point_3 &p : points)
-    bbox += p.bbox();
-
-scaling_factor_double = M_height / (bbox.zmax() - bbox.zmin());
-
-K::RT scaling_factor(scaling_factor_double); // Convert to exact type
-
-// Find the base of the tree (minimum z-coordinate)
-double base_z = std::numeric_limits<double>::max();
-for (const auto &p : points) {
-    if (p.z() < base_z)
-        base_z = p.z();
-}
-
-// Create affine transformations
-CGAL::Aff_transformation_3<K> translate_to_base(
-    CGAL::TRANSLATION, Vector_3(-centroid.x(), -centroid.y(), -base_z));
-CGAL::Aff_transformation_3<K> scale(CGAL::SCALING, scaling_factor);
-CGAL::Aff_transformation_3<K> translate_back(
-    CGAL::TRANSLATION, Vector_3(centroid.x(), centroid.y(), base_z));
-CGAL::Aff_transformation_3<K> translate_to_target(CGAL::TRANSLATION,
-                                                  Vector_3(M_x, M_y, 0));
-
-// Apply transformations: move to base, scale, move back, move to target
-for (auto &p : points) {
-    p = translate_to_base.transform(p);   // Move to base
-    p = scale.transform(p);               // Scale
-    p = translate_back.transform(p);      // Move back to original position
-    p = translate_to_target.transform(p); // Move to target position
-}
-// Clear existing mesh data
-M_wrap.clear();
-
-// Add transformed vertices to the mesh and store their descriptors
-std::map<Point_3, Mesh::Vertex_index> vertex_map;
-for (const auto &p : points) {
-    auto v = M_wrap.add_vertex(p);
-    // Store the vertex descriptor for the transformed vertex
-    vertex_map[p] = v;
-}
-
-// Add faces to the mesh
-for (const auto &face : faces) {
-    // Retrieve vertex descriptors for the face vertices
-    Mesh::Vertex_index v0 = vertex_map[points[face[0]]];
-    Mesh::Vertex_index v1 = vertex_map[points[face[1]]];
-    Mesh::Vertex_index v2 = vertex_map[points[face[2]]];
-
-    // Add the face to the mesh
-    M_wrap.add_face(v0, v1, v2);
-}
-\end{lstlisting}
-
-To ensure the placement was correct we first had to move the tree to the origin
-of its bounding box, scale it to the correct height, move it back to its original position
-(because scaling it was moving the tree around), and finally move it to the correct position in the 3D space.
-
-Note: To improve tree placement we could also compute the center of mass of a slice
-at the base of the tree and use it as its origin.
-
 \subsection{Doxygen documentation}
 
 \texttt{Doxygen}\cite{doxygen} documentation is available for the project. Doxygen is a
@@ -1007,46 +754,6 @@ firefox html/index.html
 \label{sec:Results}
 \subsection{Model integration}
 
-Here is an example of the tree mesh union of Place de la République in Strasbourg
-using generic trees and LOD1:
-
-\begin{figure}[H]
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/ovt-republic.png}
-        \captionsetup{font={scriptsize}}
-        \caption{Overpass turbo query for Place de la République in Strasbourg}
-    \end{minipage}
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/mesh-republic-lod3.png}
-        \captionsetup{font={scriptsize}}
-        \caption{Mesh we generated}
-    \end{minipage}
-\end{figure}
-
-The idea is to integrate the tree models into the terrain mesh.
-Here is an example of what this integration could look like:
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/mesh-strasbourg-enhanced1.png}
-    \captionsetup{font={scriptsize}}
-    \caption{3D model with trees at LOD 0, city center of Strasbourg}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/mesh-strasbourg-enhanced2.png}
-    \captionsetup{font={scriptsize}}
-    \caption{3D model with trees at LOD 0, place de la République in Strasbourg}
-\end{figure}
-
-These two images consist of two distinct meshes: the tree mesh and the building
-mesh. For this particular model, we included only trees with a specified height
-in the \texttt{OpenStreetMap} database. Trees without a specified height do not
-appear in the model.
 
 \subsection{Complexity and performance analysis}
 
@@ -1064,172 +771,11 @@ Mellanox ConnectX-6 Dx Dual Port 100 GbE for MPI communication.\\
 For our benchmarks, we used a single exclusive node with 256 cores and 512 GB
 of RAM.
 
-We used four different bounding boxes Strasbourg city center as our test area, 
-all centered at the same point but with
-varying sizes:
-
-\begin{figure}[H]
-    \centering
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/ovt-bbox1.png}
-        \captionsetup{font={scriptsize}}
-        \caption{153.7 m², 12 trees}
-    \end{minipage}\hfill
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/ovt-bbox2.png}
-        \captionsetup{font={scriptsize}}
-        \caption{384.0 m², 71 trees}
-    \end{minipage}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/ovt-bbox3.png}
-        \captionsetup{font={scriptsize}}
-        \caption{626.1 m², 254 trees}
-    \end{minipage}\hfill
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/ovt-bbox4.png}
-        \captionsetup{font={scriptsize}}
-        \caption{808.4 m², 513 trees}
-    \end{minipage}
-\end{figure}
-
-
-For each bounding box, the program was run for the following Levels of Detail (LODs):
-
-\begin{itemize}
-    \item LOD 0
-    \item LOD 1
-    \item LOD 2
-    \item LOD 3
-\end{itemize}
-
-\subsubsection{Area and Number of Trees}
-
-Since we're using the area as our main feature (because it is the one we
-control when meshing an area), we want to examine how the area (in m²) relates
-to the number of trees available.
-
-It is important to note that this relationship highly depends on the
-configuration of the environment. In urban settings, trees are not usually
-evenly distributed (e.g., avenues, parks, etc.), so we cannot always expect a
-linear relationship between the area and the number of trees.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{images/bench-area-vs-trees.png}
-    \captionsetup{font={scriptsize}}
-\end{figure}
-
-Since the plot is a line on a log-log scale, we can infer that the relationship
-between the number of trees and the area (in square meters) follows a power law.
-
-\subsubsection{Impact of the level of detail (LOD)}
-The Level of Detail (LOD) we chose has a significant impact. Since we did not
-select the LODs in a linear fashion, we aim to examine how the different LODs
-are related to the number of faces produced in the meshes.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{images/bench-ntree-nfaces.png}
-    \captionsetup{font={scriptsize}}
-\end{figure}
-
-The relationship between the number of faces and the Level of Detail (LOD) is
-linear. This plot clearly illustrates our choice of LODs, with the last one
-being significantly more detailed.
-
-\subsubsection{Execution time}
-Finally, we aim to benchmark the time it takes to mesh the area for each Level
-of Detail (LOD).
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{images/bench-time-ntree-quad.png}
-    \captionsetup{font={scriptsize}}
-    \caption{Execution time, union of meshes}
-\end{figure}
-
-This relationship appears to be quadratic. To confirm this with
-greater precision, we would need more data.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{images/bench-time-ntree-linear.png}
-    \captionsetup{font={scriptsize}}
-    \caption{Execution time, union of triangle soup}
-\end{figure}
-
-We can see that making the union using triangle soup instead drastically reduces the
-execution time to a linear relationship.
-
-\newpage
 
 \section{Prospects}
 
-\subsection{Account for seasonal changes and leaf fall}
-One of the developments of our project is to account for seasonal changes and
-leaf fall. Depending on the season, solar rays will penetrate foliage to
-varying degrees. To simulate this, we can group leaves into clusters of 5-10
-and label them, allowing us to add or remove these clusters in the
-configuration file based on the season. To simplify, we can categorize the
-seasons into two groups: more leaves for spring and summer, and fewer leaves
-for fall and winter.
-
-\subsection{Shading calculations}
-One other development is to simulating light and shade on 3D objects, such as
-buildings, using the \texttt{Feel++}\cite{feel++} library, which specializes in
-solving Partial Differential Equations (PDEs). This could help simulate ray
-tracing and shading effects on buildings.
-
-\newpage
 
 \section{Conclusion}
-
-The \texttt{ExaMA WP1 - Vegetation} project represents a significant stride towards
-enhancing urban modeling through the integration of vegetation, specifically
-trees, into 3D models of urban environments. By focusing on the \texttt{Urban Building
-Model} (UBM) use case within the \texttt{HiDALGO2} initiative, we aimed to improve the
-accuracy and realism of thermal and energy simulations, contributing to better
-building energy efficiency and indoor air quality.
-
-Through our efforts, we successfully extracted tree data from
-\texttt{OpenStreetMap} and utilized the \texttt{CGAL} library to generate 3D
-tree models. We integrated these models into existing terrain meshes,
-specifically focusing on the Strasbourg city center. Our methodology, involving
-data acquisition via the \texttt{Overpass API}, tree model generation using
-\texttt{Alpha Wrapping}, and precise coordinate conversion through
-\texttt{Mercator projection}, ensured a robust and scalable approach to urban
-vegetation modeling.
-
-The use of different Levels of Detail (LOD) allowed for flexible and efficient
-modeling, catering to various computational and visual requirements. Our
-benchmarking on the HPC cluster \texttt{Gaya} confirmed the scalability and performance
-of our approach, highlighting the quadratic relationship between execution time
-and the number of trees when using union of meshes and a linear relationship
-when using triangle soup.
-
-Additionally, we addressed the challenge of missing data by implementing a
-system to assign default values for tree height and genus, ensuring comprehensive
-coverage even in the absence of complete metadata. Our categorization of tree
-genera and the creation of a library of tree models further enhanced the
-versatility and applicability of our solution.
-
-Overall, the \texttt{ExaMA WP1 - Vegetation} project has laid a strong foundation for
-future urban modeling endeavors, emphasizing the importance of integrating
-natural elements into urban simulations. The project's outcomes not only
-contribute to the specific goals of the \texttt{HiDALGO2} initiative but also provide
-valuable insights and tools for broader applications in urban planning,
-environmental science, and computational geometry. As we move forward, the
-incorporation of seasonal changes, leaf fall, and advanced shading calculations
-will further refine and expand the capabilities of our modeling approach, paving
-the way for more sustainable and livable urban environments.
 
 \newpage
 
