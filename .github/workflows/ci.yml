@@ -1,0 +1,58 @@
+name: C/C++ CI
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Display disk space and memory
+        run: |
+          df -h
+          free -m
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            git \
+            libmpfr-dev \
+            libboost-dev \
+            libcurl4-openssl-dev \
+            libcgal-dev \
+            libfmt-dev
+
+      - name: Clone CGAL master branch
+        run: |
+          git clone --branch master https://github.com/CGAL/cgal.git
+          cd cgal
+          mkdir cgal.build
+          cd cgal.build
+          cmake -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/cgal.install ..
+          make install
+
+      - name: Configure project
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/cgal.install ..
+
+      - name: Build project
+        run: |
+          cd build
+          cmake --build . -- -j2  # Adjust the number of parallel jobs
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      - name: Display build directory contents
+        run: ls -la build
