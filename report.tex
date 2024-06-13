@@ -408,7 +408,7 @@ For the other LODs we will retrieve reference trees meshes from the
 \texttt{Sketch up 3D Warehouse}\cite{sketchup}, remove the trunk and branches as
 much as possible and then wrap them using the 
 \texttt{CGAL Alpha Wrapper}\cite{cgal_alpha_wrapper} algorithm (explained in the 
-next section). \\
+next section \autoref{section:alpha_wrapping} ). \\
 Here is an example of a Ginkgo tree mesh:
 \begin{figure}[H]
     \centering
@@ -427,10 +427,10 @@ A \textit{wrap.cpp} file will be provided to generate the reference meshes.
 It can be used as follows:
 
 \begin{lstlisting}[language=bash]
-./build/wrap tree_ref/raw_tree/Ginkgo.stl 50 600
+./build/src/wrap tree_ref/raw_tree/Ginkgo.stl 50 600
 \end{lstlisting}
 
-Where 50 is the \texttt{alpha} value and 600 is the \texttt{offset} value.
+Where 50 is the \texttt{alpha} value and 600 is the \texttt{offset} value. (cf \autoref{sec:alpha_wrapping})
 
 \begin{figure}[H]
     \centering
@@ -534,7 +534,7 @@ performance. Here is the number of faces for each tree type and LOD:
 \subsubsection{Leaf density}
 
 
-
+\subsubsection{Tree categorization}
 
 \subsection{Building mesh}
 
@@ -586,6 +586,7 @@ interactions between vegetation and urban structures.
 
 
 \subsection{Alpha Wrapping}
+\label{sec:alpha_wrapping}
 \begin{figure}[H]
     \centering
         \centering
