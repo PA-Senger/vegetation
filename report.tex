@@ -122,7 +122,8 @@ Vincent CHABANNES\par
 \section{Introduction}
 
 This project is part of a group of projects conducted within the \texttt{Exa-MA Project}
-\cite{exaMA} which is a part of the \texttt{Numpex} project research\cite{numpex}:
+\cite{exaMA} which is a part of the \texttt{Numpex} project research\cite{numpex}. This 
+is the name of the different projects:
 \begin{itemize}
     \item \texttt{Exa-MA WP1 - Vegetation}
     \item \texttt{Exa-MA WP1 - Terrain}
@@ -143,14 +144,13 @@ improve building energy efficiency and indoor air quality"\cite{hidalgo2-ubm},
 this particular project aims to integrate vegetation, particularly trees, into 3D models
 of urban environments.
 
-The project was conducted within \texttt{Cemosis}\cite{cemosis} (Center for
+The projects are conducted within \texttt{Cemosis}\cite{cemosis} (Center for
 Modeling and Simulation in Strasbourg), which is hosted by
 \texttt{IRMA}\cite{irma} (Institute for Advanced Mathematical Research) at
 \texttt{Strasbourg University}. We operated as students under the supervision of
-\texttt{Pierre Alliez}\cite{alliez}, senior researcher and team leader at
-\texttt{Inria}\cite{Inria} (National Institute for Research in Digital Science
-and Technology) Sophia Antipolis, and \texttt{Vincent Chabannes}\cite{chabannes},
-a research engineer at IRMA.
+ \texttt{Vincent Chabannes}\cite{chabannes}, research engineer at IRMA and 
+ \texttt{Christophe Prud'homme}\cite{prudhomme}, professor in applied mathematics
+  at Strasbourg University.
 
 \subsection{Context}
 
@@ -173,13 +173,14 @@ reducing energy consumption, and enhancing overall livability\cite{TIR4sTREEt}.
     \end{minipage}
 \end{figure}
 
-This project aims to integrate trees into 3D geometric models of urban
+This \texttt{Vegetation} project aims to integrate trees into 3D geometric models of urban
 environments to improve the accuracy and realism of thermal and energy
 simulations.
 
 By leveraging data from \texttt{OpenStreetMap}\cite{openstreetmap}, a
 collaborative free geographic database, we will use \texttt{CGAL}\cite{cgal},
-an open source software library of computational geometry algorithms,
+an open source software library of computational geometry algorithms, and
+\texttt{Gmsh}\cite{gmsh}, a 3D finite element mesh generator,
 to generate 3D tree models and integrate them into terrain meshes.
 
 Our primary focus will be on Strasbourg, France. More specifically, we were
@@ -202,7 +203,7 @@ Strasbourg city center:
     \end{minipage}
 \end{figure}
 
-However, the software is designed to be easily adaptable to any area.
+However, the final version of the software will be designed to be easily adaptable to any area.
 Here's an example of a 3D model of Manhattan, NYC:
 
 \begin{figure}[H]
@@ -225,23 +226,23 @@ Here's an example of a 3D model of Manhattan, NYC:
 
 \begin{itemize}
     \item Extracting tree meta-data from \texttt{OpenStreetMap}.
-    \subitem Position (latitude, longitude).
-    \subitem Height, genus, species.
-    \subitem In a park, boarding a road, etc.
+    \subitem Position (latitude, longitude). In a park, boarding a road, etc.
+    \subitem Height, genus, species, crown diameter, circumference, etc.
     \item Generating 3D tree models using \texttt{CGAL}\cite{cgal} and \texttt{Gmsh}\cite{gmsh}.
     \subitem LOD 0, 1, 2, 3.
-    \subitem Different leaves density.
+    \subitem Different leaf density.
     \item Integrating tree models into the terrain mesh we already have.
     \subitem Avoiding collision between trees and buildings.
     \subitem Taking into account terrain elevation.
-    \item Optimizing and parallelizing the algorithms to handle large datasets.
+    \item Optimizing and parallelizing the algorithms to efficiently handle large datasets.
 \end{itemize}
 
 \subsection{Software and libraries}
 To source our data, we'll utilize the \texttt{Overpass API}\cite{overpass} a
 read-only API to query data from \texttt{OpenStreetMap}, alongside
 \texttt{cURL}\cite{curl}, a URL transfer library. For geometric modeling, we
-will utilize the \texttt{Gmsh}\cite{gmsh} library as well as the \textbf{master} \texttt{CGAL} library, available on
+will utilize the \texttt{Gmsh}\cite{gmsh} library as well as the \textbf{master}
+ \texttt{CGAL} library, available on
 GitHub\cite{cgal-master}, known for its efficiency and reliability in geometric
 computation.
 
@@ -362,14 +363,25 @@ longitude), its \texttt{height}, and the \texttt{genus} (since this data is
 more abundant than the species) to generate the 3D tree models.
 
 \subsection{Tree library}
-We will assume that the trees belongs to a specific shape category (cone, oval, round). \\
+We will assume that the trees belongs to a specific shape category (cone, oval, 
+round). This could be improved by adding more shape as shown in the next image:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/Different-types-of-the-trees-shape.png}
+    \captionsetup{font={scriptsize}}
+    \caption{Different tree shapes\cite{img:tree-shape}}
+\end{figure}
+
+
 For all tree LODs we will separate the tree into two parts: the trunk and the
 foliage. The trunk will be a simple cylinder, while the foliage will be a more 
-complex geometry. \\
+complex geometry. This will allow us to treat the foliage separately which will 
+be useful when considering different leaf densities.
 
 \subsubsection{LOD 0}
 For the lowest level of detail, we will use simple models manually made with 
-\texttt{Gmsh}\cite{gmsh}.
+\texttt{Gmsh}\cite{gmsh}. In the following images, we can see the trunk and the
+foliage of the tree (with the trunk separated from the foliage):
 
 \begin{figure}[H]
     \centering
@@ -405,11 +417,7 @@ For the lowest level of detail, we will use simple models manually made with
 
 \subsubsection{LOD 1, 2, 3}
 For the other LODs we will retrieve reference trees meshes from the
-\texttt{Sketch up 3D Warehouse}\cite{sketchup}, remove the trunk and branches as
-much as possible and then wrap them using the 
-\texttt{CGAL Alpha Wrapper}\cite{cgal_alpha_wrapper} algorithm (explained in the 
-next section \autoref{section:alpha_wrapping} ). \\
-Here is an example of a Ginkgo tree mesh:
+\texttt{Sketch up 3D Warehouse}\cite{sketchup} as shown in the next image:
 \begin{figure}[H]
     \centering
         \centering
@@ -417,6 +425,37 @@ Here is an example of a Ginkgo tree mesh:
         \captionsetup{font={scriptsize}}
         \caption{Mesh of a Ginkgo tree on Sketchup 3D Warehouse}
 \end{figure}
+
+We will then use \texttt{Meshlab}\cite{meshlab} to remove the trunk and branches as
+much as possible, here are the results:
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.30\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth]{images/tree-conifer.png}
+        \captionsetup{font={scriptsize}}
+        \caption{A cleaned conifer}
+    \end{minipage}
+    \begin{minipage}{0.30\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth]{images/tree-ginkgo.png}
+        \captionsetup{font={scriptsize}}
+        \caption{A cleaned Ginkgo}
+    \end{minipage}
+    \begin{minipage}{0.30\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth]{images/tree-quercus.png}
+        \captionsetup{font={scriptsize}}
+        \caption{A cleaned Quercus}
+    \end{minipage}
+\end{figure}
+
+
+Finaly we will wrap the tree mesh with the
+\texttt{CGAL Alpha Wrapper}\cite{cgal_alpha_wrapper} algorithm (explained in the 
+next section \autoref{sec:alpha_wrapping}). \\
+
 
 Using the CGAL 3D Alpha Wrapping algorithm, we will generate reference tree
 meshes for each level of detail (LOD) from 0 to 3. This pre-processing ensures
@@ -430,7 +469,14 @@ It can be used as follows:
 ./build/src/wrap tree_ref/raw_tree/Ginkgo.stl 50 600
 \end{lstlisting}
 
-Where 50 is the \texttt{alpha} value and 600 is the \texttt{offset} value. (cf \autoref{sec:alpha_wrapping})
+Where 50 is the \texttt{alpha} value and 600 is the \texttt{offset} value. 
+(cf \autoref{sec:alpha_wrapping}). \\
+
+The following images show the results of the wrapping algorithm for different
+\texttt{alpha} values on our reference tree meshes retrieve from \texttt{Sketchup}
+(the trunk is separated from the foliage, each image is composed of two parts: 
+the trunk and the foliage):
+
 
 \begin{figure}[H]
     \centering
@@ -438,19 +484,19 @@ Where 50 is the \texttt{alpha} value and 600 is the \texttt{offset} value. (cf \
         \centering
         \includegraphics[width=1\textwidth]{images/tree-cone_lod1.png}
         \captionsetup{font={scriptsize}}
-        \caption{Cone shaped tree lod1}
+        \caption{Cone shaped lod1}
     \end{minipage}
     \begin{minipage}{0.30\textwidth}
         \centering
         \includegraphics[width=1\textwidth]{images/tree-cone_lod2.png}
         \captionsetup{font={scriptsize}}
-        \caption{Cone shaped tree lod2}
+        \caption{Cone shaped lod2}
     \end{minipage}
     \begin{minipage}{0.30\textwidth}
         \centering
         \includegraphics[width=1\textwidth]{images/tree-cone_lod3.png}
         \captionsetup{font={scriptsize}}
-        \caption{Cone shaped tree lod3}
+        \caption{Cone shaped lod3}
     \end{minipage}
 \end{figure}
 
@@ -460,19 +506,19 @@ Where 50 is the \texttt{alpha} value and 600 is the \texttt{offset} value. (cf \
         \centering
         \includegraphics[width=1\textwidth]{images/tree-oval_lod1.png}
         \captionsetup{font={scriptsize}}
-        \caption{Oval shaped tree lod1}
+        \caption{Oval shaped lod1}
     \end{minipage}
     \begin{minipage}{0.30\textwidth}
         \centering
         \includegraphics[width=1\textwidth]{images/tree-oval_lod2.png}
         \captionsetup{font={scriptsize}}
-        \caption{Oval shaped tree lod2}
+        \caption{Oval shaped lod2}
     \end{minipage}
     \begin{minipage}{0.30\textwidth}
         \centering
         \includegraphics[width=1\textwidth]{images/tree-oval_lod3.png}
         \captionsetup{font={scriptsize}}
-        \caption{Oval shaped tree lod3}
+        \caption{Oval shaped lod3}
     \end{minipage}
 \end{figure}
 
@@ -482,22 +528,24 @@ Where 50 is the \texttt{alpha} value and 600 is the \texttt{offset} value. (cf \
         \centering
         \includegraphics[width=1\textwidth]{images/tree-round_lod1.png}
         \captionsetup{font={scriptsize}}
-        \caption{Round shaped tree lod1}
+        \caption{Round shaped lod1}
     \end{minipage}
     \begin{minipage}{0.30\textwidth}
         \centering
         \includegraphics[width=1\textwidth]{images/tree-round_lod2.png}
         \captionsetup{font={scriptsize}}
-        \caption{Round shaped tree lod2}
+        \caption{Round shaped lod2}
     \end{minipage}
     \begin{minipage}{0.30\textwidth}
         \centering
         \includegraphics[width=1\textwidth]{images/tree-round_lod3.png}
         \captionsetup{font={scriptsize}}
-        \caption{Round shaped tree lod3}
+        \caption{Round shaped lod3}
     \end{minipage}
 \end{figure}
 
+
+We used the following \texttt{alpha} values for each LOD:
 \begin{table}[H]
     \centering
     \begin{tabular}{|l|c|c|c|c|}
@@ -511,9 +559,12 @@ Where 50 is the \texttt{alpha} value and 600 is the \texttt{offset} value. (cf \
     \label{tab:my_label}
 \end{table}
 
+(Reminder: LOD 0 is made with Gmsh not with the Alpha Wrapping algorithm.)
+
 \subsubsection{Number of faces}
 In simulation software, the number of faces of the tree models is crucial for
-performance. Here is the number of faces for each tree type and LOD:
+performance. The next table shows the relation between the LOD and the number of
+ faces for each tree shape:
 
 \begin{table}[H]
     \centering
@@ -527,7 +578,7 @@ performance. Here is the number of faces for each tree type and LOD:
     Round & 1106 & 1198 & 10152 & 45164 \\
     \hline
     \end{tabular}
-    \caption{Number of faces per tree type and LOD}
+    \caption{Number of faces per tree shape type and LOD}
     \label{tab:my_label2}
 \end{table}
 
