@@ -584,9 +584,38 @@ performance. The next table shows the relation between the LOD and the number of
 
 \subsubsection{Leaf density}
 
+As seasons change, trees undergo various stages of growth and leaf shedding.
+To simulate these changes, we will implement different leaf densities for the
+tree models. This will allow us to adjust the foliage's appearance and
+complexity based on the time of year.\\
+
+To achieve this we will iterate through the tree's faces of the foliage meshes 
+and randomly label the faces with a \texttt{A, B, C, D} tag, each having a 
+$25\%$ chance of being selected. This will allow us to represent the different
+leaf densities; if all \texttt{A, B, C, D} tags are used, the tree will have
+a full foliage, if only the tag \texttt{A} is used, the tree will have a low
+foliage density, etc.\\
+
+The following images depict the different leaf densities for the tree models:
+...
+
+
 
 \subsubsection{Tree categorization}
 
+To ensure the realism and accuracy of the tree models, we choose to categorize
+them based on their shape. This categorization will help us
+generate more realistic tree models and improve the overall quality of the
+urban environment simulation. \\
+
+The major issue will be to find a way to categorize the trees based on their shape
+only knowing (at best) the genus, the species, the height, the circumference, and
+the diameter of the crown. \\
+
+Another issue is that a young tree of a certain species will have a different 
+shape than an old tree of the same species, and we don't have access to this information.
+ The shape of a tree can also be influenced by its environment and the care it 
+ receives (pruning, treatment, etc.). \\
 \subsection{Building mesh}
 
 To test the integration of trees and buildings we will be working with is a 3D 
@@ -595,7 +624,7 @@ center, provided in the \texttt{.stl} file format. This file contains the
 geometric information of the terrain and buildings in the specified area,
 which serves as the base for our project.
 
-The \texttt{.stl} (stereolithography) format is widely used for 3D printing
+The \texttt{.stl}\cite{stl} (stereolithography) format is widely used for 3D printing
 and computer-aided design (CAD). It represents the surface geometry of a 3D
 object without any color, texture, or other attributes. The file comprises a
 collection of triangular facets, each defined by its vertices and normal vector.
