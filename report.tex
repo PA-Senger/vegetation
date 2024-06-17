@@ -739,7 +739,72 @@ and refining the triangulation as needed, it ensures no intersecting cells are
 flagged inside. Steiner points inserted during refinement break necessary cells,
  reducing circumradii and ensuring completion.
 
+\subsection{Tree scaling}
+We want to scale the trees to match the real world. To do this we will use the
+following tree attributes retrieve from the \texttt{OpenStreetMap} data:
+\begin{itemize}
+    \item \texttt{height}: the height of the tree in meters.
+    \item \texttt{diameter\_crown}: the diameter of the crown in meters.
+    \item \texttt{circumference}: the circumference of the trunk in meters.
+\end{itemize}
 
+We will start by assuming those attributes exist and are correct.\\
+The next step will be to scale the tree to match the real world. To do this we
+will scale the foliage and the trunk separately. The foliage will be scaled
+using the \texttt{diameter\_crown} attribute and the trunk will be scaled using
+the \texttt{circumference} attribute.\\
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[height=7cm]{images/foliage_arrows.png}
+        \captionsetup{font={scriptsize}}
+        \caption{Foliage bounding box}
+    \end{minipage}
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[height=7cm]{images/trunk_arrows.png}
+        \captionsetup{font={scriptsize}}
+        \caption{Trunk bounding box}
+    \end{minipage}
+\end{figure}
+
+The \texttt{diameter\_crown} attribute depends on the shape of the tree as shown
+in the next images:
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[height=7cm]{images/diam_foliage_round.png}
+        \captionsetup{font={scriptsize}}
+        \caption{Diameter crown for a round tree}
+    \end{minipage}
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[height=7cm]{images/diam_foliage_oval.png}
+        \captionsetup{font={scriptsize}}
+        \caption{Diameter crown for an oval tree}
+    \end{minipage}
+\end{figure}
+
+The \texttt{scaling factor} for the foliage will be calculated as follows:
+\begin{equation}
+    \text{scaling factor} = \frac{\text{diam\_foliage}}{\text{bbox.ymax()-bbox.ymin()}}
+\end{equation}
+
+For the trunk it will be:
+\begin{equation}
+    \text{scaling factor} = \frac{\text{diam\_trunk}}{\text{bbox.ymax()-bbox.ymin()}}
+\end{equation}
+
+Where,
+\begin{itemize}
+    \item $\text{diam\_trunk} = \text{circumference} / \pi$
+    \item $\text{bbox.ymax()-bbox.ymin()}$
+is the width of the bounding box of the tree.
+\end{itemize}
 
 \subsection{Tree placement}
 
@@ -781,6 +846,11 @@ To achieve this while taking into account that the Earth is not perfect sphere
 we will assume the Earth is a geodesic defined as \texttt{WGS84}\cite{wgs84} and use
 the \texttt{WGS84toCartesian}\cite{wgs84_to_cartesian} open source header-only
 library to convert the coordinates.
+
+The scaled foliage will be placed with the top of the bounding box at the
+height of the tree. The trunk will be on the ground at the position of the tree.
+We will also need to make sure the height of the trunk is not greater than the height of
+the tree. Otherwise, the trunk will be truncated or scaled down.???
 
 Then the union of all the tree meshed will need to be computed to create a single mesh
 and avoid collision between the trees. \\
