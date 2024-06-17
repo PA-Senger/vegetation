@@ -122,8 +122,8 @@ Vincent CHABANNES\par
 \section{Introduction}
 
 This project is part of a group of projects conducted within the \texttt{Exa-MA Project}
-\cite{exaMA} which is a part of the \texttt{Numpex} project research\cite{numpex}. This 
-is the name of the different projects:
+\cite{exaMA} which is a part of the \texttt{Numpex} project research\cite{numpex}. Those 
+are the names of the different projects:
 \begin{itemize}
     \item \texttt{Exa-MA WP1 - Vegetation}
     \item \texttt{Exa-MA WP1 - Terrain}
@@ -252,8 +252,6 @@ repository to manage the project and facilitate collaboration.
 The repository contains the project's code, documentation, and resources.
 It will be updated regularly to reflect the progress and changes made during
 the project's development.
-
-
 
 
 \section{Methodology}
@@ -451,13 +449,8 @@ much as possible, here are the results:
     \end{minipage}
 \end{figure}
 
-
-Finaly we will wrap the tree mesh with the
-\texttt{CGAL Alpha Wrapper}\cite{cgal_alpha_wrapper} algorithm (explained in the 
-next section \autoref{sec:alpha_wrapping}). \\
-
-
-Using the CGAL 3D Alpha Wrapping algorithm, we will generate reference tree
+Using the CGAL 3D Alpha Wrapping algorithm (explained in the 
+next section \autoref{sec:alpha_wrapping}), we will generate reference tree
 meshes for each level of detail (LOD) from 0 to 3. This pre-processing ensures
 that the meshes are readily available in memory, eliminating the need to wrap
 each tree model individually during program execution.
@@ -562,7 +555,7 @@ We used the following \texttt{alpha} values for each LOD:
 (Reminder: LOD 0 is made with Gmsh not with the Alpha Wrapping algorithm.)
 
 \subsubsection{Number of faces}
-In simulation software, the number of faces of the tree models is crucial for
+In simulation software, the number of faces in the mesh is crucial for
 performance. The next table shows the relation between the LOD and the number of
  faces for each tree shape:
 
@@ -599,7 +592,8 @@ foliage density, etc.\\
 The following images depict the different leaf densities for the tree models:
 ...
 
-
+The user will be able to specify which tags are applied in the \textit{config.json} 
+file.
 
 \subsubsection{Tree categorization}
 
@@ -611,6 +605,8 @@ urban environment simulation. \\
 The major issue will be to find a way to categorize the trees based on their shape
 only knowing (at best) the genus, the species, the height, the circumference, and
 the diameter of the crown. \\
+If we had access to an image of the tree, we could use an image recognition
+algorithm to categorize them based on their shape. \\
 
 Another issue is that a young tree of a certain species will have a different 
 shape than an old tree of the same species, and we don't have access to this information.
@@ -740,7 +736,7 @@ flagged inside. Steiner points inserted during refinement break necessary cells,
  reducing circumradii and ensuring completion.
 
 \subsection{Tree scaling}
-We want to scale the trees to match the real world. To do this we will use the
+In order to scale the trees to match the real world we will use the
 following tree attributes retrieve from the \texttt{OpenStreetMap} data:
 \begin{itemize}
     \item \texttt{height}: the height of the tree in meters.
@@ -779,13 +775,13 @@ in the next images:
         \centering
         \includegraphics[height=7cm]{images/diam_foliage_round.png}
         \captionsetup{font={scriptsize}}
-        \caption{Diameter crown for a round tree}
+        \caption{Diameter crown round tree}
     \end{minipage}
     \begin{minipage}{0.45\textwidth}
         \centering
         \includegraphics[height=7cm]{images/diam_foliage_oval.png}
         \captionsetup{font={scriptsize}}
-        \caption{Diameter crown for an oval tree}
+        \caption{Diameter crown oval tree}
     \end{minipage}
 \end{figure}
 
@@ -805,6 +801,12 @@ Where,
     \item $\text{bbox.ymax()-bbox.ymin()}$
 is the width of the bounding box of the tree.
 \end{itemize}
+
+If the \texttt{circumference} (resp. \texttt{diameter\_crown}) is not available
+we will use the \texttt{scaling factor} obtained from the other attribute to 
+scale the tree.\\
+If both attributes are missing we will use a default \texttt{height} value specified
+ by the user in the \textit{config.json} file.
 
 \subsection{Tree placement}
 
